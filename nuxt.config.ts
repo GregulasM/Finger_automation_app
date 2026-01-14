@@ -51,6 +51,9 @@ export default defineNuxtConfig({
     rollupConfig: {
       external: [/^@prisma\//, /\.wasm$/],
     },
+    prerender: {
+      routes: []
+    }
   },
   devtools: {
     enabled: true,
