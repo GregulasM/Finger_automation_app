@@ -24,13 +24,18 @@ useSeoMeta({
 const auth = useAuthStore();
 const { user, loggedIn } = storeToRefs(auth);
 const route = useRoute();
+const { t, locale, setLocale } = useI18n();
+
+function toggleLocale() {
+  setLocale(locale.value === "en" ? "ru" : "en");
+}
 
 type NavLink = { label: string; to: string };
 
 const navLinks: NavLink[] = [
-  { label: "Home", to: "/" },
-  { label: "Workflows", to: "/workflows" },
-  { label: "Editor", to: "/workflows/editor" },
+  { label: t("nav.home"), to: "/" },
+  { label: t("nav.workflows"), to: "/workflows" },
+  { label: t("nav.editor"), to: "/workflows/editor" },
 ];
 
 function isActiveLink(link: NavLink) {
@@ -56,7 +61,7 @@ watch(
 <template>
   <UApp class="min-h-screen bg-zinc-950 text-zinc-100">
     <header
-      class="sticky top-0 z-40 border-b border-orange-500/60 bg-zinc-950/95 backdrop-blur-lg opacity-90"
+      class="sticky top-0 z-40 border-b border-orange-500/60 bg-zinc-950/10 backdrop-blur-sm"
     >
       <!-- тонкая линия-акцент -->
       <div
@@ -108,6 +113,22 @@ watch(
 
         <!-- Right area -->
         <div class="flex items-center gap-1 4xs:gap-2">
+          <!-- Language switcher -->
+          <div class="hidden 2xs:flex items-center gap-1">
+            <button
+              type="button"
+              @click="toggleLocale"
+              class="rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-3 py-1 3xs:py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
+              :title="locale === 'en' ? t('lang.russian') : t('lang.english')"
+            >
+              <span
+                class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
+              >
+                {{ locale === "en" ? "RU" : "EN" }}
+              </span>
+            </button>
+          </div>
+          
           <!-- Mobile hamburger -->
           <button
             type="button"
@@ -139,8 +160,8 @@ watch(
             <span
               class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
             >
-              <span class="hidden 2xs:inline">New workflow</span>
-              <span class="2xs:hidden">New</span>
+              <span class="hidden 2xs:inline">{{ t("nav.newWorkflow") }}</span>
+              <span class="2xs:hidden">{{ t("common.new") }}</span>
             </span>
           </NuxtLink>
 
@@ -153,7 +174,7 @@ watch(
               <p
                 class="text-zinc-100 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
               >
-                {{ user.name || "User" }}
+                {{ user.name || t("common.user") }}
               </p>
               <p
                 class="text-zinc-100/70 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 opacity-75"
@@ -170,7 +191,7 @@ watch(
               <span
                 class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
               >
-                Logout
+                {{ t("common.logout") }}
               </span>
             </button>
           </div>
@@ -180,11 +201,11 @@ watch(
             to="/auth/login"
             class="hidden 2xs:inline-flex rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-3 py-1 3xs:py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90"
           >
-            <span
-              class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
-            >
-              Sign in
-            </span>
+              <span
+                class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
+              >
+                {{ t("common.signIn") }}
+              </span>
           </NuxtLink>
         </div>
       </div>
@@ -217,6 +238,21 @@ watch(
             </NuxtLink>
 
             <div class="mt-1 border-t border-orange-500/25 pt-2">
+              <!-- Language switcher mobile -->
+              <div class="mb-2 flex items-center justify-center">
+                <button
+                  type="button"
+                  @click="toggleLocale"
+                  class="w-full rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
+                >
+                  <span
+                    class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
+                  >
+                    {{ locale === "en" ? t("lang.russian") : t("lang.english") }} ({{ locale === "en" ? "RU" : "EN" }})
+                  </span>
+                </button>
+              </div>
+              
               <div
                 v-if="loggedIn && user"
                 class="flex items-center justify-between gap-2"
@@ -225,7 +261,7 @@ watch(
                   <p
                     class="truncate text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
                   >
-                    {{ user.name || "User" }}
+                    {{ user.name || t("common.user") }}
                   </p>
                   <p
                     class="truncate text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 opacity-75"
@@ -252,11 +288,11 @@ watch(
                 to="/auth/login"
                 class="inline-flex w-full items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90"
               >
-                <span
-                  class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
-                >
-                  Sign in
-                </span>
+              <span
+                class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
+              >
+                {{ t("common.signIn") }}
+              </span>
               </NuxtLink>
             </div>
           </nav>

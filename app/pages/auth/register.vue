@@ -11,29 +11,29 @@
           <h1
             class="mt-2 4xs:mt-3 text-[7px] 4xs:text-[8px] 3xs:text-[9px] 2xs:text-[10px] xs:text-[11px] sm:text-sm md:text-md lg:text-md 2xl:text-lg 3xl:text-lg/6 4xl:text-2xl/8 5xl:text-3xl/10 font-bold text-zinc-100"
           >
-            Create your account
+            {{ t("auth.createAccount") }}
           </h1>
           <p
             class="mt-2 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
           >
-            Start building automations in minutes.
+            {{ t("auth.startBuilding") }}
           </p>
         </div>
 
         <div
-          class="rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/70 backdrop-blur-lg opacity-90 p-4 4xs:p-5 3xs:p-6"
+          class="rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/90 p-4 4xs:p-5 3xs:p-6"
         >
           <UAlert
             v-if="errorMessage"
             color="red"
             variant="soft"
-            title="Registration failed"
+            :title="t('auth.registrationFailed')"
             :description="errorMessage"
             class="mb-4"
           />
           <UForm :schema="schema" :state="state" @submit="onSubmit">
             <div class="space-y-3 4xs:space-y-4">
-              <UFormField label="Name" name="name">
+              <UFormField :label="t('auth.name')" name="name">
                 <UInput
                   v-model="state.name"
                   type="text"
@@ -42,7 +42,7 @@
                   :ui="{ root: 'ring-0' }"
                 />
               </UFormField>
-              <UFormField label="Email" name="email">
+              <UFormField :label="t('auth.email')" name="email">
                 <UInput
                   v-model="state.email"
                   type="email"
@@ -51,7 +51,7 @@
                   :ui="{ root: 'ring-0' }"
                 />
               </UFormField>
-              <UFormField label="Password" name="password">
+              <UFormField :label="t('auth.password')" name="password">
                 <UInput
                   v-model="state.password"
                   type="password"
@@ -68,8 +68,8 @@
                 <span
                   class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
                 >
-                  <span v-if="loading">Loading...</span>
-                  <span v-else>Create account</span>
+                  <span v-if="loading">{{ t("common.loading") }}</span>
+                  <span v-else>{{ t("auth.createAccountButton") }}</span>
                 </span>
               </button>
             </div>
@@ -78,12 +78,12 @@
           <div
             class="mt-4 4xs:mt-6 text-center text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
           >
-            Already have an account?
+            {{ t("auth.alreadyHaveAccount") }}
             <NuxtLink
               to="/auth/login"
               class="font-semibold text-orange-500 hover:text-orange-400"
             >
-              Sign in
+              {{ t("auth.signIn") }}
             </NuxtLink>
           </div>
         </div>
@@ -96,6 +96,8 @@
 import { $fetch } from "ofetch";
 import { reactive, ref } from "vue";
 import { z } from "zod";
+
+const { t } = useI18n();
 
 const auth = useAuthStore();
 
@@ -111,11 +113,11 @@ const schema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Name must be at least 2 characters.")
-    .max(80, "Name must be under 80 characters.")
-    .regex(nameRegex, "Use Russian or English letters only."),
-  email: z.string().email("Enter a valid email."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+    .min(2, t("auth.nameMinLength"))
+    .max(80, t("auth.nameMaxLength"))
+    .regex(nameRegex, t("auth.nameInvalidChars")),
+  email: z.string().email(t("auth.enterValidEmail")),
+  password: z.string().min(8, t("auth.passwordMinLength")),
 });
 
 const loading = ref(false);
@@ -155,6 +157,6 @@ function getErrorMessage(error: unknown) {
   if (error instanceof Error) {
     return error.message;
   }
-  return "Unable to register.";
+  return t("auth.unableToRegister");
 }
 </script>

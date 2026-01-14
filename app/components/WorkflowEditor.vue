@@ -1,12 +1,12 @@
 <template>
   <div class="h-full flex flex-col space-y-3 4xs:space-y-4">
     <div
-      class="flex flex-wrap items-center justify-between gap-3 rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/70 backdrop-blur-lg opacity-90 px-3 4xs:px-4 py-3"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/90 px-3 4xs:px-4 py-3"
     >
       <div class="flex flex-1 flex-wrap items-center gap-3">
         <UInput
           v-model="workflowName"
-          placeholder="Workflow name"
+          :placeholder="t('editor.workflowName')"
           class="min-w-[220px] flex-1"
           :ui="inputStyles"
         />
@@ -14,12 +14,12 @@
           class="flex items-center gap-2 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
         >
           <USwitch v-model="workflowActive" :ui="{ root: 'ring-0' }" />
-          <span>Active</span>
+          <span>{{ t("editor.active") }}</span>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <UBadge color="neutral" variant="soft" :ui="{ root: 'ring-0', base: 'bg-zinc-800 border-orange-500/30 text-zinc-100' }">
-          Trigger: {{ triggerLabel }}
+          {{ t("editor.trigger") }}: {{ triggerLabel }}
         </UBadge>
         <button
           type="button"
@@ -30,8 +30,8 @@
           <span
             class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
           >
-            <span v-if="saving || loadingWorkflow">Saving...</span>
-            <span v-else>Save</span>
+            <span v-if="saving || loadingWorkflow">{{ t("editor.saving") }}</span>
+            <span v-else>{{ t("editor.save") }}</span>
           </span>
         </button>
       </div>
@@ -41,7 +41,7 @@
       v-if="saveError"
       color="red"
       variant="soft"
-      title="Save failed"
+      :title="t('editor.saveFailed')"
       :description="saveError"
       :ui="{ root: 'ring-0' }"
     />
@@ -49,23 +49,89 @@
       v-if="loadError"
       color="red"
       variant="soft"
-      title="Load failed"
+      :title="t('editor.loadFailed')"
       :description="loadError"
       :ui="{ root: 'ring-0' }"
     />
 
     <div
-      class="flex flex-1 min-h-0 w-full overflow-hidden rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/50"
+      class="flex flex-row flex-1 min-h-0 w-full overflow-hidden rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/50 relative"
     >
-      <aside class="flex w-64 flex-col border-r border-orange-500/30 bg-zinc-800/70 backdrop-blur-lg opacity-90 p-3 4xs:p-4">
+      <!-- Mobile menu buttons -->
+      <button
+        v-if="!blocksMenuOpen"
+        type="button"
+        @click="blocksMenuOpen = true"
+        class="lg:hidden fixed left-2 top-1/2 -translate-y-1/2 z-30 rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800 transition"
+        aria-label="Open blocks menu"
+      >
+        <svg
+          class="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <button
+        v-if="!nodeSettingsMenuOpen"
+        type="button"
+        @click="nodeSettingsMenuOpen = true"
+        class="lg:hidden fixed right-2 top-1/2 -translate-y-1/2 z-30 rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800 transition"
+        aria-label="Open node settings menu"
+      >
+        <svg
+          class="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      </button>
+
+      <!-- Overlay for mobile -->
+      <div
+        v-if="blocksMenuOpen || nodeSettingsMenuOpen"
+        class="lg:hidden fixed inset-0 bg-zinc-950/50 z-20"
+        @click="blocksMenuOpen = false; nodeSettingsMenuOpen = false"
+      ></div>
+
+      <!-- Blocks sidebar -->
+      <aside
+        :class="[
+          'flex w-64 flex-shrink-0 flex-col border-r border-orange-500/30 bg-zinc-800/90 p-3 4xs:p-4',
+          'fixed lg:static inset-y-0 left-0 z-30 lg:z-auto',
+          'transform transition-transform duration-300 ease-in-out',
+          blocksMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        ]"
+      >
+        <!-- Close button for mobile -->
+        <button
+          type="button"
+          @click="blocksMenuOpen = false"
+          class="lg:hidden absolute top-2 right-2 rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 py-1 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800 transition"
+          aria-label="Close blocks menu"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
         <div
           class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold uppercase tracking-wider text-zinc-100/60"
         >
-          Blocks
+          {{ t("editor.blocks") }}
         </div>
         <div class="mt-3 4xs:mt-4 flex-1 overflow-y-auto space-y-2 pr-1">
           <div
-            v-for="item in palette"
+            v-for="item in translatedPalette"
             :key="item.id"
             class="group flex w-full select-none flex-col gap-1 rounded-lg border px-2 4xs:px-3 py-2 text-left transition cursor-grab active:cursor-grabbing"
             :class="
@@ -76,11 +142,11 @@
             draggable="true"
             role="button"
             tabindex="0"
-            @dragstart="onDragStart($event, item)"
+            @dragstart="onDragStart($event, palette.find(p => p.id === item.id)!)"
             @dragend="onDragEnd"
-            @click="selectPalette(item)"
-            @keydown.enter.prevent="addNodeFromPalette(item)"
-            @keydown.space.prevent="addNodeFromPalette(item)"
+            @click="selectPalette(palette.find(p => p.id === item.id)!)"
+            @keydown.enter.prevent="addNodeFromPalette(palette.find(p => p.id === item.id)!)"
+            @keydown.space.prevent="addNodeFromPalette(palette.find(p => p.id === item.id)!)"
           >
             <div class="flex items-center justify-between gap-2">
               <span
@@ -91,7 +157,7 @@
               <span
                 class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 uppercase text-zinc-100/50"
               >
-                {{ item.role }}
+                {{ getTranslatedRole(item.role) }}
               </span>
             </div>
             <span
@@ -101,62 +167,82 @@
             </span>
           </div>
         </div>
-        <div class="mt-4 4xs:mt-6 rounded-lg border border-orange-500/30 bg-zinc-800/50 p-3 max-h-[40vh] overflow-y-auto">
-          <div
-            class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold uppercase tracking-wider text-zinc-100/60"
+        <div class="mt-4 4xs:mt-6 rounded-lg border border-orange-500/30 bg-zinc-800/50 p-3">
+          <button
+            type="button"
+            @click="blockDetailsExpanded = !blockDetailsExpanded"
+            class="flex w-full items-center justify-between text-left"
           >
-            Block details
-          </div>
-          <div v-if="selectedPalette" class="mt-2 space-y-2">
             <div
-              class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold text-zinc-100"
+              class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold uppercase tracking-wider text-zinc-100/60"
             >
-              {{ selectedPalette.label }}
+              {{ t("editor.blockDetails") }}
             </div>
-            <p
-              class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
+            <svg
+              class="h-3 w-3 4xs:h-4 4xs:w-4 text-zinc-100/60 transition-transform"
+              :class="{ 'rotate-180': blockDetailsExpanded }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {{ selectedPalette.details }}
-            </p>
-            <div
-              v-if="selectedPalette.tips?.length"
-              class="space-y-1 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
-            >
-              <div v-for="tip in selectedPalette.tips" :key="tip">
-                - {{ tip }}
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div
+            v-show="blockDetailsExpanded"
+            class="mt-2 max-h-[40vh] overflow-y-auto space-y-2"
+          >
+            <div v-if="translatedSelectedPalette" class="space-y-2">
+              <div
+                class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold text-zinc-100"
+              >
+                {{ translatedSelectedPalette.label }}
+              </div>
+              <p
+                class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
+              >
+                {{ translatedSelectedPalette.details }}
+              </p>
+              <div
+                v-if="translatedSelectedPalette.tips?.length"
+                class="space-y-1 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
+              >
+                <div v-for="tip in translatedSelectedPalette.tips" :key="tip">
+                  - {{ tip }}
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 4xs:px-3 py-1.5 4xs:py-2 text-zinc-100 transition hover:border-orange-500/70 hover:bg-zinc-800"
+                  @click="addNodeFromPalette(selectedPalette!)"
+                >
+                  <span
+                    class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
+                  >
+                    {{ t("editor.addToCanvas") }}
+                  </span>
+                </button>
+                <span
+                  class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/50"
+                >
+                  {{ t("editor.tipDrag") }}
+                </span>
               </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="rounded-md border border-orange-500/30 bg-zinc-800/70 backdrop-blur-lg opacity-90 px-2 4xs:px-3 py-1.5 4xs:py-2 text-zinc-100 transition hover:border-orange-500/70 hover:bg-zinc-800/90"
-                @click="addNodeFromPalette(selectedPalette)"
-              >
-                <span
-                  class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
-                >
-                  Add to canvas
-                </span>
-              </button>
-              <span
-                class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/50"
-              >
-                Tip: drag to place it precisely.
-              </span>
+            <div
+              v-else
+              class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
+            >
+              {{ t("editor.clickBlock") }}
             </div>
-          </div>
-          <div
-            v-else
-            class="mt-2 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
-          >
-            Click a block to see what it does and how to configure it.
           </div>
         </div>
       </aside>
 
       <div
         ref="flowWrapper"
-        class="relative flex-1"
+        class="relative flex-1 min-h-0 z-10"
         @drop="onDrop"
         @dragover="onDragOver"
       >
@@ -167,6 +253,11 @@
             v-model:edges="edges"
             class="h-full w-full workflow-canvas"
             :fit-view-on-init="true"
+            :min-zoom="0.1"
+            :max-zoom="2"
+            :snap-to-grid="true"
+            :snap-grid="[20, 20]"
+            :only-render-visible-elements="true"
             @connect="onConnect"
             @node-click="onNodeClick"
             @pane-click="clearSelection"
@@ -174,41 +265,67 @@
         </ClientOnly>
       </div>
 
-      <aside class="flex w-96 flex-col border-l border-orange-500/30 bg-zinc-800/70 backdrop-blur-lg opacity-90">
-        <div class="border-b border-orange-500/30 px-4 4xs:px-6 py-3 4xs:py-4">
-          <div class="flex items-start justify-between gap-3">
-            <div>
+      <!-- Node settings sidebar -->
+      <aside
+        :class="[
+          'flex w-80 flex-shrink-0 flex-col border-l border-orange-500/30 bg-zinc-800/90 max-w-[30vw] min-w-0',
+          'fixed lg:static inset-y-0 right-0 z-30 lg:z-auto',
+          'transform transition-transform duration-300 ease-in-out',
+          nodeSettingsMenuOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+        ]"
+      >
+        <div class="flex-shrink-0 border-b border-orange-500/30 px-4 4xs:px-6 py-3 4xs:py-4">
+          <div class="flex items-start justify-between gap-3 min-w-0">
+            <div class="min-w-0 flex-1">
               <div
                 class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold uppercase tracking-wider text-zinc-100/60"
               >
-                Node settings
+                {{ t("editor.nodeSettings") }}
               </div>
               <div
-                class="mt-1 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold text-zinc-100"
+                class="mt-1 truncate text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold text-zinc-100"
               >
                 {{ selectedLabel }}
               </div>
             </div>
+            <!-- Close button for mobile -->
+            <button
+              type="button"
+              @click="nodeSettingsMenuOpen = false"
+              class="lg:hidden flex-shrink-0 rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 py-1 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800 transition"
+              aria-label="Close node settings menu"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex items-start justify-between gap-3 min-w-0 mt-2">
             <button
               v-if="selectedNode"
               type="button"
-              class="rounded-md border border-red-500/30 bg-red-500/20 backdrop-blur-lg opacity-90 px-2 4xs:px-3 py-1.5 4xs:py-2 text-red-400 transition hover:border-red-500/70 hover:bg-red-500/30"
+              class="flex-shrink-0 rounded-md border border-red-500/30 bg-red-500/20 px-2 4xs:px-3 py-1.5 4xs:py-2 text-red-400 transition hover:border-red-500/70 hover:bg-red-500/30"
               @click="removeSelectedNode"
             >
               <span
                 class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
               >
-                Delete
+                {{ t("editor.delete") }}
               </span>
             </button>
           </div>
         </div>
-        <div class="flex-1 space-y-4 overflow-y-auto px-4 4xs:px-6 py-3 4xs:py-4">
+        <div class="flex-1 min-h-0 space-y-4 overflow-y-auto px-4 4xs:px-6 py-3 4xs:py-4">
           <div
             v-if="!selectedNode"
             class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
           >
-            Select a node to edit its settings.
+            {{ t("editor.selectNode") }}
           </div>
 
           <template v-else>
@@ -219,7 +336,7 @@
                 <div
                   class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold uppercase tracking-wider text-zinc-100/60"
                 >
-                  About this block
+                  {{ t("editor.aboutBlock") }}
                 </div>
                 <div
                   class="mt-1 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold text-zinc-100"
@@ -231,7 +348,7 @@
                 >
                   {{
                     selectedHelp?.details ||
-                    "Configure this block to control how it behaves."
+                    t("editor.configureBlock")
                   }}
                 </p>
                 <div
@@ -246,10 +363,10 @@
 
               <div v-if="selectedRole === 'trigger'" class="space-y-4">
                 <div v-if="selectedType === 'Webhook'" class="space-y-3">
-                  <UFormField label="Webhook URL" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.webhookUrl')" :ui="formFieldStyles">
                     <UInput
                       :model-value="webhookEndpoint"
-                      placeholder="Save to generate the webhook URL"
+                      :placeholder="t('editor.saveToGenerateWebhook')"
                       readonly
                       :ui="inputStyles"
                     />
@@ -263,18 +380,18 @@
                       :ui="{ root: 'ring-0' }"
                       @click="saveWorkflow"
                     >
-                      Generate endpoint
+                      {{ t("editor.generateEndpoint") }}
                     </UButton>
                     <span
                       class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
                     >
-                      Saving creates a stable URL for this trigger.
+                      {{ t("editor.savingCreatesUrl") }}
                     </span>
                   </div>
                 </div>
 
                 <div v-if="selectedType === 'Schedule'" class="space-y-3">
-                  <UFormField label="Cron expression" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.cronExpression')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.cron ?? '')"
                       placeholder="*/5 * * * *"
@@ -284,7 +401,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Timezone" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.timezone')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.timezone ?? 'UTC')"
                       placeholder="UTC"
@@ -297,10 +414,10 @@
                 </div>
 
                 <div v-if="selectedType === 'Email'" class="space-y-3">
-                  <UFormField label="Inbound email endpoint" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.inboundEmailEndpoint')" :ui="formFieldStyles">
                     <UInput
                       :model-value="emailEndpoint"
-                      placeholder="Save to generate the inbound endpoint"
+                      :placeholder="t('editor.saveToGenerateEmail')"
                       readonly
                       :ui="inputStyles"
                     />
@@ -314,18 +431,18 @@
                       :ui="{ root: 'ring-0' }"
                       @click="saveWorkflow"
                     >
-                      Generate endpoint
+                      {{ t("editor.generateEndpoint") }}
                     </UButton>
                     <span
                       class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
                     >
-                      Save once to get the inbound URL.
+                      {{ t("editor.saveOnceForUrl") }}
                     </span>
                   </div>
                   <div
                     class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
                   >
-                    Configure your inbound email provider to POST to this URL.
+                    {{ t("editor.configureEmailProvider") }}
                   </div>
                 </div>
               </div>
@@ -335,7 +452,7 @@
                   v-if="selectedActionType === 'HTTP Request'"
                   class="space-y-4"
                 >
-                  <UFormField label="URL" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.url')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.url ?? '')"
                       placeholder="https://api.example.com"
@@ -345,7 +462,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Method" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.method')" :ui="formFieldStyles">
                     <USelect
                       :items="httpMethods"
                       :model-value="String(selectedConfig.method ?? 'POST')"
@@ -355,7 +472,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Headers (JSON)" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.headers')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="
                         formatJsonConfig(selectedConfig.headers, '{}')
@@ -367,7 +484,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Body (JSON or text)" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.body')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="String(selectedConfig.body ?? '')"
                       placeholder='{"id":"123"}'
@@ -380,7 +497,7 @@
                 </div>
 
                 <div v-if="selectedActionType === 'Email'" class="space-y-4">
-                  <UFormField label="To" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.to')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.to ?? '')"
                       placeholder="user@example.com"
@@ -390,7 +507,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Subject" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.subject')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.subject ?? '')"
                       placeholder="Workflow update"
@@ -400,7 +517,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="HTML" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.html')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="String(selectedConfig.html ?? '')"
                       placeholder="<p>Hello!</p>"
@@ -410,7 +527,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Text" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.text')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="String(selectedConfig.text ?? '')"
                       placeholder="Plain text fallback"
@@ -423,7 +540,7 @@
                 </div>
 
                 <div v-if="selectedActionType === 'Telegram'" class="space-y-4">
-                  <UFormField label="Bot token" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.botToken')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.botToken ?? '')"
                       placeholder="123456:ABC..."
@@ -433,7 +550,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Chat ID" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.chatId')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.chatId ?? '')"
                       placeholder="123456789"
@@ -443,7 +560,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Message" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.message')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="String(selectedConfig.message ?? '')"
                       placeholder="Workflow completed"
@@ -453,7 +570,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Parse mode" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.parseMode')" :ui="formFieldStyles">
                     <USelect
                       :items="telegramParseModes"
                       :model-value="
@@ -468,7 +585,7 @@
                 </div>
 
                 <div v-if="selectedActionType === 'Database'" class="space-y-4">
-                  <UFormField label="Model" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.model')" :ui="formFieldStyles">
                     <UInput
                       :model-value="String(selectedConfig.model ?? '')"
                       placeholder="user"
@@ -478,7 +595,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Operation" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.operation')" :ui="formFieldStyles">
                     <USelect
                       :items="dbOperations"
                       :model-value="
@@ -490,7 +607,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Args (JSON)" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.args')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="formatJsonConfig(selectedConfig.args, '{}')"
                       placeholder='{"data":{"email":"user@example.com"}}'
@@ -506,7 +623,7 @@
                   v-if="selectedActionType === 'Transformation'"
                   class="space-y-4"
                 >
-                  <UFormField label="Expression" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.expression')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="String(selectedConfig.expression ?? '')"
                       placeholder="input.amount > 100"
@@ -516,7 +633,7 @@
                       "
                     />
                   </UFormField>
-                  <UFormField label="Mapping (JSON)" :ui="formFieldStyles">
+                  <UFormField :label="t('editor.mapping')" :ui="formFieldStyles">
                     <UTextarea
                       :model-value="
                         formatJsonConfig(selectedConfig.mapping, '{}')
@@ -534,10 +651,10 @@
                   <div
                     class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold text-zinc-100"
                   >
-                    Error handling
+                    {{ t("editor.errorHandling") }}
                   </div>
                   <div class="mt-3 space-y-3">
-                    <UFormField label="Retry count" :ui="formFieldStyles">
+                    <UFormField :label="t('editor.retryCount')" :ui="formFieldStyles">
                       <UInput
                         type="number"
                         :model-value="String(selectedConfig.retryCount ?? 0)"
@@ -547,7 +664,7 @@
                         "
                       />
                     </UFormField>
-                    <UFormField label="Retry delay (ms)" :ui="formFieldStyles">
+                    <UFormField :label="t('editor.retryDelay')" :ui="formFieldStyles">
                       <UInput
                         type="number"
                         :model-value="String(selectedConfig.retryDelayMs ?? 0)"
@@ -557,7 +674,7 @@
                         "
                       />
                     </UFormField>
-                    <UFormField label="On error" :ui="formFieldStyles">
+                    <UFormField :label="t('editor.onError')" :ui="formFieldStyles">
                       <USelect
                         :items="errorModes"
                         :model-value="String(selectedConfig.onError ?? 'fail')"
@@ -567,7 +684,7 @@
                         "
                       />
                     </UFormField>
-                    <UFormField label="Notify email" :ui="formFieldStyles">
+                    <UFormField :label="t('editor.notifyEmail')" :ui="formFieldStyles">
                       <UInput
                         :model-value="String(selectedConfig.notifyEmail ?? '')"
                         placeholder="alerts@example.com"
@@ -747,6 +864,9 @@ const toast = useToast();
 const loadingWorkflow = ref(false);
 const loadError = ref<string | null>(null);
 const draggingItem = ref<PaletteItem | null>(null);
+const blockDetailsExpanded = ref(true);
+const blocksMenuOpen = ref(false);
+const nodeSettingsMenuOpen = ref(false);
 
 // Стили для полей ввода - убираем ring ring-inset ring-accented в пассивном состоянии
 // При фокусе добавляем ring-2 для визуального отличия
@@ -816,9 +936,38 @@ const selectedHelp = computed(() => {
     ) ?? null
   );
 });
+const { t } = useI18n();
+
+function getTranslatedPaletteItem(item: PaletteItem): PaletteItem {
+  const key = item.id;
+  const roleKey = item.role === "trigger" ? "trigger" : "action";
+  
+  return {
+    ...item,
+    summary: t(`editor.palette.${key}.summary`) || item.summary,
+    details: t(`editor.palette.${key}.details`) || item.details,
+    tips: item.tips?.map((tip, index) => 
+      t(`editor.palette.${key}.tip${index + 1}`) || tip
+    ) || [],
+    role: item.role, // Keep original role for logic, translate only in display
+  };
+}
+
+function getTranslatedRole(role: "trigger" | "action"): string {
+  return t(`editor.palette.role.${role}`) || role;
+}
+
+const translatedPalette = computed(() => 
+  palette.map(item => getTranslatedPaletteItem(item))
+);
+
+const translatedSelectedPalette = computed(() => 
+  selectedPalette.value ? getTranslatedPaletteItem(selectedPalette.value) : null
+);
+
 const triggerLabel = computed(() => {
   const triggerNode = getTriggerNode();
-  return triggerNode?.data?.label ?? "Not set";
+  return triggerNode?.data?.label ?? t("editor.notSet");
 });
 
 watch(
@@ -1310,13 +1459,13 @@ async function saveWorkflow() {
 
   const name = workflowName.value.trim();
   if (!name) {
-    saveError.value = "Workflow name is required.";
+    saveError.value = t("editor.workflowNameRequired");
     return;
   }
 
   const triggerType = resolveTriggerType();
   if (!triggerType) {
-    saveError.value = "Add a trigger block before saving.";
+    saveError.value = t("editor.addTriggerBeforeSaving");
     return;
   }
 
@@ -1343,8 +1492,8 @@ async function saveWorkflow() {
       );
       workflowId.value = response.id ?? workflowId.value;
       toast.add({
-        title: "Saved",
-        description: "Workflow updated.",
+        title: t("editor.saved"),
+        description: t("editor.workflowUpdated"),
         color: "green",
       });
     } else {
@@ -1355,8 +1504,8 @@ async function saveWorkflow() {
       });
       workflowId.value = response.id ?? null;
       toast.add({
-        title: "Saved",
-        description: "Workflow saved.",
+        title: t("editor.saved"),
+        description: t("editor.workflowSaved"),
         color: "green",
       });
     }
@@ -1421,5 +1570,21 @@ function getErrorMessage(error: unknown) {
   --tw-ring-color: rgb(249 115 22) !important;
   --tw-ring-inset: inset !important;
   box-shadow: inset 0 0 0 2px rgb(249 115 22) !important;
+}
+
+/* Стили для узлов Vue Flow */
+:deep(.vue-flow__node),
+:deep(.vue-flow__node.vue-flow__node-default),
+:deep(.vue-flow__node.nopan),
+:deep(.vue-flow__node.draggable),
+:deep(.vue-flow__node.selectable) {
+  background-color: rgb(249 115 22) !important; /* bg-orange-500 */
+  color: rgb(9 9 11) !important; /* text-zinc-950 */
+}
+
+/* Стили для текста внутри узлов */
+:deep(.vue-flow__node *),
+:deep(.vue-flow__node.vue-flow__node-default *) {
+  color: rgb(9 9 11) !important; /* text-zinc-950 */
 }
 </style>
