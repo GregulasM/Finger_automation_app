@@ -274,10 +274,60 @@
             :max-zoom="2"
             :snap-to-grid="false"
             :only-render-visible-elements="true"
+            :edges-updatable="true"
+            :default-edge-options="{ deletable: true, selectable: true }"
             @connect="onConnect"
             @node-click="onNodeClick"
+            @edge-click="onEdgeClick"
             @pane-click="clearSelection"
-          />
+          >
+            <!-- Custom node template with labeled handles -->
+            <template #node-default="{ data, sourcePosition, targetPosition }">
+              <div class="custom-node">
+                <!-- Input handle (target) -->
+                <Handle
+                  type="target"
+                  :position="targetPosition || Position.Left"
+                  class="handle-input"
+                />
+                <!-- Node label -->
+                <div class="node-label">{{ data.label }}</div>
+                <!-- Output handle (source) -->
+                <Handle
+                  type="source"
+                  :position="sourcePosition || Position.Right"
+                  class="handle-output"
+                />
+              </div>
+            </template>
+
+            <!-- Custom edge with delete button on hover -->
+            <template #edge-default="{ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, selected }">
+              <BaseEdge
+                :id="id"
+                :path="getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })[0]"
+                :marker-end="markerEnd"
+                :class="['custom-edge', { 'edge-selected': selected || selectedEdgeId === id }]"
+              />
+              <!-- Delete button on edge -->
+              <EdgeLabelRenderer>
+                <div
+                  :style="{
+                    position: 'absolute',
+                    transform: `translate(-50%, -50%) translate(${(sourceX + targetX) / 2}px, ${(sourceY + targetY) / 2}px)`,
+                    pointerEvents: 'all',
+                  }"
+                  class="edge-delete-button"
+                  :class="{ 'visible': selected || selectedEdgeId === id }"
+                  @click.stop="removeEdgeById(id)"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </EdgeLabelRenderer>
+            </template>
+          </VueFlow>
         </ClientOnly>
       </div>
 
@@ -728,9 +778,15 @@ import { $fetch } from "ofetch";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   addEdge,
+  BaseEdge,
   type Connection,
   type Edge,
+  type EdgeMouseEvent,
+  EdgeLabelRenderer,
+  getSmoothStepPath,
+  Handle,
   type Node,
+  Position,
   useVueFlow,
   VueFlow,
 } from "@vue-flow/core";
@@ -885,6 +941,7 @@ const blockDetailsExpanded = ref(true);
 const blocksMenuOpen = ref(false);
 const nodeSettingsMenuOpen = ref(false);
 const mobileHintDismissed = ref(false);
+const selectedEdgeId = ref<string | null>(null);
 
 // Стили для полей ввода - убираем ring ring-inset ring-accented в пассивном состоянии
 // При фокусе добавляем ring-2 для визуального отличия
@@ -1332,7 +1389,7 @@ function onDrop(event: DragEvent) {
 }
 
 function onConnect(params: Connection) {
-  edges.value = addEdge(params, edges.value);
+  edges.value = addEdge(params, edges.value) as Edge[];
 }
 
 function onNodeClick(
@@ -1353,6 +1410,30 @@ function onNodeClick(
 
 function clearSelection() {
   selectedNodeId.value = null;
+  selectedEdgeId.value = null;
+}
+
+function onEdgeClick(event: EdgeMouseEvent) {
+  const edge = event.edge;
+  if (!edge?.id) {
+    return;
+  }
+  selectedEdgeId.value = String(edge.id);
+  selectedNodeId.value = null;
+}
+
+function removeEdgeById(edgeId: string) {
+  edges.value = edges.value.filter((edge) => String(edge.id) !== edgeId);
+  if (selectedEdgeId.value === edgeId) {
+    selectedEdgeId.value = null;
+  }
+}
+
+function removeSelectedEdge() {
+  if (!selectedEdgeId.value) {
+    return;
+  }
+  removeEdgeById(selectedEdgeId.value);
 }
 
 function removeNodeById(nodeId: string) {
@@ -1373,9 +1454,6 @@ function removeSelectedNode() {
 }
 
 function handleKeydown(event: KeyboardEvent) {
-  if (!selectedNodeId.value) {
-    return;
-  }
   const target = event.target as HTMLElement | null;
   const tagName = target?.tagName?.toLowerCase();
   if (
@@ -1389,7 +1467,11 @@ function handleKeydown(event: KeyboardEvent) {
 
   if (event.key === "Delete" || event.key === "Backspace") {
     event.preventDefault();
-    removeSelectedNode();
+    if (selectedEdgeId.value) {
+      removeSelectedEdge();
+    } else if (selectedNodeId.value) {
+      removeSelectedNode();
+    }
   }
 }
 
@@ -1642,5 +1724,137 @@ function getErrorMessage(error: unknown) {
 :deep(.vue-flow__edge-path) {
   stroke: rgb(249 115 22) !important;
   stroke-width: 2px !important;
+}
+
+:deep(.vue-flow__edge.selected .vue-flow__edge-path),
+:deep(.custom-edge.edge-selected) {
+  stroke: rgb(251 146 60) !important; /* orange-400 */
+  stroke-width: 3px !important;
+}
+
+/* Custom node styles */
+:deep(.custom-node) {
+  position: relative;
+  background-color: rgb(249 115 22); /* bg-orange-500 */
+  color: rgb(9 9 11); /* text-zinc-950 */
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  min-width: 120px;
+  text-align: center;
+}
+
+:deep(.custom-node .node-label) {
+  color: rgb(9 9 11);
+  font-weight: 600;
+}
+
+/* Handle styles - Input (target) */
+:deep(.handle-input) {
+  width: 14px !important;
+  height: 14px !important;
+  background-color: rgb(34 197 94) !important; /* green-500 */
+  border: 2px solid rgb(22 163 74) !important; /* green-600 */
+  border-radius: 50% !important;
+  cursor: crosshair !important;
+}
+
+:deep(.handle-input::before) {
+  content: 'IN';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  font-weight: 700;
+  color: rgb(34 197 94);
+  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+/* Handle styles - Output (source) */
+:deep(.handle-output) {
+  width: 14px !important;
+  height: 14px !important;
+  background-color: rgb(59 130 246) !important; /* blue-500 */
+  border: 2px solid rgb(37 99 235) !important; /* blue-600 */
+  border-radius: 50% !important;
+  cursor: crosshair !important;
+}
+
+:deep(.handle-output::after) {
+  content: 'OUT';
+  position: absolute;
+  right: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8px;
+  font-weight: 700;
+  color: rgb(59 130 246);
+  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+
+/* Edge delete button */
+.edge-delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: rgb(239 68 68); /* red-500 */
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+}
+
+.edge-delete-button:hover {
+  background-color: rgb(220 38 38); /* red-600 */
+  transform: scale(1.1);
+}
+
+.edge-delete-button.visible {
+  opacity: 1;
+}
+
+.edge-delete-button svg {
+  color: white;
+}
+
+/* Show delete button on edge hover */
+:deep(.vue-flow__edge:hover) + .edge-delete-button,
+:deep(.vue-flow__edge.selected) + .edge-delete-button {
+  opacity: 1;
+}
+
+/* Vue Flow handle overrides for default nodes */
+:deep(.vue-flow__handle) {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+}
+
+:deep(.vue-flow__handle-left),
+:deep(.vue-flow__handle[data-handlepos="left"]) {
+  background-color: rgb(34 197 94) !important; /* green-500 - input */
+  border: 2px solid rgb(22 163 74) !important;
+}
+
+:deep(.vue-flow__handle-right),
+:deep(.vue-flow__handle[data-handlepos="right"]) {
+  background-color: rgb(59 130 246) !important; /* blue-500 - output */
+  border: 2px solid rgb(37 99 235) !important;
+}
+
+:deep(.vue-flow__handle-top),
+:deep(.vue-flow__handle[data-handlepos="top"]) {
+  background-color: rgb(34 197 94) !important; /* green-500 - input */
+  border: 2px solid rgb(22 163 74) !important;
+}
+
+:deep(.vue-flow__handle-bottom),
+:deep(.vue-flow__handle[data-handlepos="bottom"]) {
+  background-color: rgb(59 130 246) !important; /* blue-500 - output */
+  border: 2px solid rgb(37 99 235) !important;
 }
 </style>
