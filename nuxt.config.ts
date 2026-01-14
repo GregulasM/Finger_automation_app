@@ -57,7 +57,8 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
       routes: [],
-      ignore: ['/']
+      ignore: ['/'],
+      failOnError: false,
     },
     esbuild: {
       options: {
