@@ -163,6 +163,19 @@ export const useI18n = () => {
       "editor.palette.role.trigger": "trigger",
       "editor.palette.role.action": "action",
 
+      // Telegram action
+      "editor.telegram.botTokenHint": "Get it from",
+      "editor.telegram.chatIdHint": "Get your ID from",
+      "editor.telegram.messagePlaceholder": "✅ Workflow completed successfully!",
+      "editor.telegram.messageHint": "Use *bold*, _italic_, `code` for Markdown formatting",
+      "editor.telegram.parseModeHint": "Markdown — *bold* _italic_, HTML — <b>bold</b> <i>italic</i>",
+      "editor.telegram.preview": "Preview",
+      "editor.telegram.testSend": "Send test",
+      "editor.telegram.sending": "Sending...",
+      "editor.telegram.testMessage": "🧪 Test message from workflow editor",
+      "editor.telegram.testSuccess": "✓ Message sent!",
+      "editor.telegram.testFailed": "Failed to send message",
+
       // Auth
       "auth.welcomeBack": "Welcome back",
       "auth.signInDescription": "Sign in to manage your workflows and triggers.",
@@ -348,6 +361,19 @@ export const useI18n = () => {
       "editor.palette.transformation.tip2": "Маппинг может выбирать поля по пути.",
       "editor.palette.role.trigger": "триггер",
       "editor.palette.role.action": "действие",
+
+      // Telegram action
+      "editor.telegram.botTokenHint": "Получите у",
+      "editor.telegram.chatIdHint": "Узнайте свой ID у",
+      "editor.telegram.messagePlaceholder": "✅ Workflow успешно выполнен!",
+      "editor.telegram.messageHint": "Используйте *жирный*, _курсив_, `код` для Markdown",
+      "editor.telegram.parseModeHint": "Markdown — *жирный* _курсив_, HTML — <b>жирный</b> <i>курсив</i>",
+      "editor.telegram.preview": "Предпросмотр",
+      "editor.telegram.testSend": "Тест",
+      "editor.telegram.sending": "Отправка...",
+      "editor.telegram.testMessage": "🧪 Тестовое сообщение из редактора workflows",
+      "editor.telegram.testSuccess": "✓ Сообщение отправлено!",
+      "editor.telegram.testFailed": "Не удалось отправить сообщение",
 
       // Auth
       "auth.welcomeBack": "Добро пожаловать",
