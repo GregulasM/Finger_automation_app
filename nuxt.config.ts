@@ -98,6 +98,9 @@ export default defineNuxtConfig({
 
       applyLayout(pages);
     },
+    close: () => {
+      process.exit(0)
+    }
   },
   colorMode: {
     preference: "light",
