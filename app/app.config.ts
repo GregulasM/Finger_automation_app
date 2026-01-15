@@ -5,6 +5,24 @@ export default defineAppConfig({
       primary: 'orange',
       neutral: 'zinc'
     },
+    input: {
+      base: 'text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
+      default: {
+        size: 'md'
+      }
+    },
+    textarea: {
+      base: 'text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
+    },
+    select: {
+      base: 'text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
+    },
+    selectMenu: {
+      base: 'text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
+      option: {
+        base: 'text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
+      }
+    },
     button: {
       root: 'ring-0',
       base: 'focus:ring-0 focus:ring-offset-0',
@@ -30,6 +48,8 @@ export default defineAppConfig({
     alert: {
       root: 'ring-0',
       base: 'bg-zinc-800/70 border-orange-500/30 backdrop-blur-lg opacity-90',
+      title: 'text-[7px] 4xs:text-[8px] 3xs:text-[9px] 2xs:text-[10px] xs:text-[11px] sm:text-sm md:text-md lg:text-md 2xl:text-lg 3xl:text-lg/6 4xl:text-2xl/8 5xl:text-3xl/10 font-bold',
+      description: 'text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
       color: {
         red: {
           soft: 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -41,7 +61,7 @@ export default defineAppConfig({
     },
     badge: {
       root: 'ring-0',
-      base: 'bg-zinc-800/70 border-orange-500/30 text-zinc-100',
+      base: 'bg-zinc-800/70 border-orange-500/30 text-zinc-100 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
       color: {
         neutral: {
           soft: 'bg-zinc-800/70 text-zinc-100 border-orange-500/30'
@@ -63,19 +83,19 @@ export default defineAppConfig({
     form: {
       wrapper: 'space-y-1',
       label: {
-        base: 'text-zinc-100 font-semibold',
+        base: 'text-zinc-100 font-semibold text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold',
         required: 'text-zinc-100'
       },
       help: {
-        base: 'text-zinc-100'
+        base: 'text-zinc-100 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12'
       },
       error: {
-        base: 'text-red-400'
+        base: 'text-red-400 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12'
       }
     },
     toast: {
-      title: 'text-zinc-100',
-      description: 'text-zinc-100/80',
+      title: 'text-zinc-100 text-[7px] 4xs:text-[8px] 3xs:text-[9px] 2xs:text-[10px] xs:text-[11px] sm:text-sm md:text-md lg:text-md 2xl:text-lg 3xl:text-lg/6 4xl:text-2xl/8 5xl:text-3xl/10 font-bold',
+      description: 'text-zinc-100/80 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12',
       background: 'bg-zinc-800 border-orange-500/30',
     },
   }

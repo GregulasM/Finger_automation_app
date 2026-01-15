@@ -1,85 +1,74 @@
 <template>
-  <div class="fixed inset-0 bg-zinc-950 overflow-y-auto px-2 4xs:px-3 3xs:px-4 xs:px-6 pt-14 4xs:pt-16 3xs:pt-18 xs:pt-20 sm:pt-16 pb-8">
-    <UContainer>
-      <div class="mx-auto w-full max-w-md">
-        <div class="mb-4 4xs:mb-6 text-center">
-          <p
-            class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold uppercase tracking-[0.3em] text-orange-500"
-          >
-            Finger Automation
-          </p>
-          <h1
-            class="mt-2 4xs:mt-3 text-[7px] 4xs:text-[8px] 3xs:text-[9px] 2xs:text-[10px] xs:text-[11px] sm:text-sm md:text-md lg:text-md 2xl:text-lg 3xl:text-lg/6 4xl:text-2xl/8 5xl:text-3xl/10 font-bold text-zinc-100"
-          >
-            {{ t("auth.welcomeBack") }}
-          </h1>
-          <p
-            class="mt-2 text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
-          >
-            {{ t("auth.signInDescription") }}
-          </p>
-        </div>
+  <div class="min-h-screen w-full bg-zinc-950 flex flex-col justify-center py-20 px-4 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="text-center mb-8">
+        <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.3em] text-orange-500 mb-2">
+          Finger Automation
+        </p>
+        <h2 class="text-2xl font-bold tracking-tight text-zinc-100">
+          {{ t("auth.welcomeBack") }}
+        </h2>
+        <p class="mt-2 text-sm text-zinc-400">
+          {{ t("auth.signInDescription") }}
+        </p>
+      </div>
 
-        <div
-          class="rounded-xl 4xs:rounded-2xl border border-orange-500/30 bg-zinc-800/90 p-4 4xs:p-5 3xs:p-6"
-        >
+      <div class="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-xl shadow-xl overflow-hidden">
+        <div class="p-8">
           <UAlert
             v-if="errorMessage"
-            color="red"
+            color="error"
             variant="soft"
             :title="t('auth.loginFailed')"
             :description="errorMessage"
-            class="mb-4"
+            class="mb-6"
           />
-          <UForm :schema="schema" :state="state" @submit="onSubmit">
-            <div class="space-y-3 4xs:space-y-4">
-              <UFormField :label="t('auth.email')" name="email" :ui="formFieldStyles">
-                <UInput
-                  v-model="state.email"
-                  type="email"
-                  placeholder="you@company.com"
-                  autocomplete="email"
-                  :ui="inputStyles"
-                />
-              </UFormField>
-              <UFormField :label="t('auth.password')" name="password" :ui="formFieldStyles">
-                <UInput
-                  v-model="state.password"
-                  type="password"
-                  placeholder="********"
-                  autocomplete="current-password"
-                  :ui="inputStyles"
-                />
-              </UFormField>
-              <button
-                type="submit"
-                :disabled="loading"
-                class="w-full rounded-md border border-orange-500 bg-orange-500 px-4 py-2.5 text-zinc-950 transition hover:brightness-110 disabled:opacity-50"
-              >
-                <span
-                  class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"
-                >
-                  <span v-if="loading">{{ t("common.loading") }}</span>
-                  <span v-else>{{ t("auth.signIn") }}</span>
-                </span>
-              </button>
-            </div>
-          </UForm>
 
-          <div
-            class="mt-4 4xs:mt-6 text-center text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
-          >
-            {{ t("auth.dontHaveAccount") }}
-            <NuxtLink
-              to="/auth/register"
-              class="font-semibold text-orange-500 hover:text-orange-400"
+          <UForm :schema="schema" :state="state" @submit="onSubmit" class="space-y-6">
+            <UFormField :label="t('auth.email')" name="email" :ui="formFieldStyles">
+              <UInput
+                v-model="state.email"
+                type="email"
+                placeholder="you@company.com"
+                autocomplete="email"
+                :ui="inputStyles"
+              />
+            </UFormField>
+
+            <UFormField :label="t('auth.password')" name="password" :ui="formFieldStyles">
+              <UInput
+                v-model="state.password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                :ui="inputStyles"
+              />
+            </UFormField>
+
+            <button
+              type="submit"
+              :disabled="loading"
+              class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
+              <span v-if="loading" class="flex items-center gap-2">
+                <UIcon name="i-heroicons-arrow-path-20-solid" class="animate-spin h-4 w-4" />
+                {{ t("common.loading") }}
+              </span>
+              <span v-else>{{ t("auth.signIn") }}</span>
+            </button>
+          </UForm>
+        </div>
+        
+        <div class="px-8 py-4 bg-zinc-900/50 border-t border-zinc-800/50 text-center">
+          <p class="text-xs text-zinc-400">
+            {{ t("auth.dontHaveAccount") }}
+            <NuxtLink to="/auth/register" class="font-medium text-orange-500 hover:text-orange-400 transition-colors">
               {{ t("auth.createOne") }}
             </NuxtLink>
-          </div>
+          </p>
         </div>
       </div>
-    </UContainer>
+    </div>
   </div>
 </template>
 
