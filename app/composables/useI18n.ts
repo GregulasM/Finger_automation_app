@@ -236,6 +236,9 @@ export const useI18n = () => {
       "editor.http.testing": "Testing...",
       "editor.http.success": "Success",
       "editor.http.failed": "Failed",
+      "editor.http.recursionBlocked": "Recursion blocked",
+      "editor.http.recursionBlockedDesc":
+        "This request would re-trigger the same workflow.",
 
       // Email action
       "editor.email.toHint":
@@ -678,6 +681,9 @@ export const useI18n = () => {
       "editor.http.testing": "Тестирование...",
       "editor.http.success": "Успех",
       "editor.http.failed": "Ошибка",
+      "editor.http.recursionBlocked": "Рекурсия заблокирована",
+      "editor.http.recursionBlockedDesc":
+        "Этот запрос повторно запустил бы тот же workflow.",
 
       // Email action
       "editor.email.toHint":

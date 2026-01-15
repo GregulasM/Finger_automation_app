@@ -5,8 +5,30 @@ import { safeExecute } from "./safe-execute";
 import { getUpstashRedis } from "./upstash-redis";
 import { normalizeWorkflowSteps, type WorkflowStep } from "./workflow";
 import type { WorkflowJobData } from "./workflow-job";
+import {
+  WORKFLOW_CHAIN_HEADER,
+  appendWorkflowToChain,
+  formatWorkflowChain,
+  isInternalWorkflowHook,
+} from "./workflow-chain";
+
+type WorkflowExecutionContext = {
+  workflowId: string;
+  chain: string[];
+  appOrigin: string;
+};
 
 export async function processWorkflowJob(data: WorkflowJobData) {
+  const runtimeConfig = useRuntimeConfig();
+  const appOrigin = resolveAppOrigin(
+    runtimeConfig.public?.appUrl as string | undefined,
+  );
+  const chain = appendWorkflowToChain(data.chain ?? [], data.workflowId);
+  const context: WorkflowExecutionContext = {
+    workflowId: data.workflowId,
+    chain,
+    appOrigin,
+  };
   const redis = getUpstashRedis();
   const lockKey = data.executionId
     ? `workflow:execution:${data.executionId}`
@@ -88,6 +110,7 @@ export async function processWorkflowJob(data: WorkflowJobData) {
         step,
         currentInput,
         appendLog,
+        context,
       );
 
       if (!result.ok) {
@@ -196,10 +219,14 @@ export async function processWorkflowJob(data: WorkflowJobData) {
   }
 }
 
-async function handleStep(step: WorkflowStep, input: unknown) {
+async function handleStep(
+  step: WorkflowStep,
+  input: unknown,
+  context: WorkflowExecutionContext,
+) {
   switch (step.type) {
     case "HTTP Request":
-      return handleHttpRequest(step, input);
+      return handleHttpRequest(step, input, context);
     case "Email":
       return handleEmail(step, input);
     case "Telegram":
@@ -213,7 +240,11 @@ async function handleStep(step: WorkflowStep, input: unknown) {
   }
 }
 
-async function handleHttpRequest(step: WorkflowStep, input: unknown) {
+async function handleHttpRequest(
+  step: WorkflowStep,
+  input: unknown,
+  context: WorkflowExecutionContext,
+) {
   const config = step.config ?? {};
   const url = String(config.url ?? config.endpoint ?? "");
   if (!url) {
@@ -227,6 +258,14 @@ async function handleHttpRequest(step: WorkflowStep, input: unknown) {
 
   const method = String(config.method ?? "POST").toUpperCase();
   const headers = parseObjectConfig(config.headers);
+  const shouldAttachChain =
+    Boolean(context.appOrigin) &&
+    parsed.origin === context.appOrigin &&
+    isInternalWorkflowHook(parsed.pathname);
+  const workflowChainHeader =
+    shouldAttachChain && context.chain.length
+      ? formatWorkflowChain(context.chain)
+      : null;
 
   const body = config.body ?? input;
   const bodyPayload = parseJsonMaybe(body);
@@ -244,6 +283,9 @@ async function handleHttpRequest(step: WorkflowStep, input: unknown) {
       headers: {
         "Content-Type": "application/json",
         ...headers,
+        ...(workflowChainHeader
+          ? { [WORKFLOW_CHAIN_HEADER]: workflowChainHeader }
+          : {}),
       },
       body: shouldSendBody
         ? typeof bodyPayload === "string"
@@ -485,6 +527,7 @@ async function executeStepWithRetries(
   step: WorkflowStep,
   input: unknown,
   appendLog: (entry: Record<string, unknown>) => Promise<void>,
+  context: WorkflowExecutionContext,
 ) {
   const retryCount = Number(step.config?.retryCount ?? 0);
   const retryDelayMs = Number(step.config?.retryDelayMs ?? 0);
@@ -496,7 +539,7 @@ async function executeStepWithRetries(
     attempt += 1;
 
     const result = await safeExecute(
-      async () => handleStep(step, input),
+      async () => handleStep(step, input, context),
       step.timeoutMs ?? 15000,
     );
 
@@ -540,4 +583,25 @@ function delay(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+function resolveAppOrigin(configUrl?: string) {
+  const trimmed = String(configUrl ?? "").trim();
+  const vercelUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "";
+  const candidate =
+    trimmed && trimmed !== "http://localhost:3000"
+      ? trimmed
+      : vercelUrl || trimmed;
+
+  if (!candidate) {
+    return "";
+  }
+
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    return "";
+  }
 }

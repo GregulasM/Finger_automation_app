@@ -291,7 +291,14 @@ type ExecutionRecord = {
 };
 
 const runtimeConfig = useRuntimeConfig();
-const appUrl = runtimeConfig.public?.appUrl ?? "";
+const requestUrl = useRequestURL();
+const appUrl = computed(() => {
+  const configUrl = runtimeConfig.public?.appUrl || "";
+  if (configUrl && configUrl !== "http://localhost:3000") {
+    return configUrl;
+  }
+  return requestUrl.origin || configUrl;
+});
 const selectedWorkflowId = ref<string | null>(null);
 const mobileView = ref<"list" | "detail">("list");
 const auth = useAuthStore();
@@ -357,10 +364,10 @@ const triggerEndpoint = computed(() => {
     return "";
   }
   if (selectedWorkflow.value.triggerType === "WEBHOOK") {
-    return `${appUrl}/api/hooks/${selectedWorkflow.value.id}`;
+    return `${appUrl.value}/api/hooks/${selectedWorkflow.value.id}`;
   }
   if (selectedWorkflow.value.triggerType === "EMAIL") {
-    return `${appUrl}/api/email/inbound/${selectedWorkflow.value.id}`;
+    return `${appUrl.value}/api/email/inbound/${selectedWorkflow.value.id}`;
   }
   return "";
 });

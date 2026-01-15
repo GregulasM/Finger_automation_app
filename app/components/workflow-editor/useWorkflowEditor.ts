@@ -780,6 +780,26 @@ export function useWorkflowEditor(props: WorkflowEditorProps) {
       headers = {};
     }
 
+    let isInternalHook = false;
+    try {
+      const parsedUrl = new URL(url);
+      isInternalHook =
+        Boolean(appOrigin.value) &&
+        parsedUrl.origin === appOrigin.value &&
+        (parsedUrl.pathname.startsWith("/api/hooks/") ||
+          parsedUrl.pathname.startsWith("/api/email/inbound/"));
+    } catch {
+      isInternalHook = false;
+    }
+
+    const chainHeaderKey = "x-workflow-chain";
+    const hasChainHeader = Object.keys(headers).some(
+      (key) => key.toLowerCase() === chainHeaderKey,
+    );
+    if (isInternalHook && workflowId.value && !hasChainHeader) {
+      headers[chainHeaderKey] = workflowId.value;
+    }
+
     httpTesting.value = true;
     httpTestResult.value = null;
 
@@ -812,6 +832,15 @@ export function useWorkflowEditor(props: WorkflowEditorProps) {
         status: response.status,
         data,
       };
+
+      if (isInternalHook && response.status === 409) {
+        toast.add({
+          title: t("editor.http.recursionBlocked"),
+          description: t("editor.http.recursionBlockedDesc"),
+          color: "error",
+          timeout: 4000,
+        });
+      }
     } catch (error) {
       httpTestResult.value = {
         ok: false,
@@ -1283,7 +1312,21 @@ export function useWorkflowEditor(props: WorkflowEditorProps) {
 
   const { project } = useVueFlow(flowId);
   const runtimeConfig = useRuntimeConfig();
-  const appUrl = computed(() => runtimeConfig.public?.appUrl || "");
+  const requestUrl = useRequestURL();
+  const appUrl = computed(() => {
+    const configUrl = runtimeConfig.public?.appUrl || "";
+    if (configUrl && configUrl !== "http://localhost:3000") {
+      return configUrl;
+    }
+    return requestUrl.origin || configUrl;
+  });
+  const appOrigin = computed(() => {
+    try {
+      return new URL(appUrl.value).origin;
+    } catch {
+      return "";
+    }
+  });
   const webhookEndpoint = computed(() =>
     workflowId.value ? `${appUrl.value}/api/hooks/${workflowId.value}` : "",
   );

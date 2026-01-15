@@ -46,7 +46,10 @@ export default defineNuxtConfig({
     schedulerSecret:
       process.env.SCHEDULER_SECRET || process.env.CRON_SECRET || "",
     public: {
-      appUrl: process.env.APP_URL || "http://localhost:3000",
+      appUrl:
+        process.env.APP_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+        "http://localhost:3000",
     },
   },
 

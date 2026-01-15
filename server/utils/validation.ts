@@ -33,6 +33,7 @@ export const workflowJobSchema = z.object({
   executionId: z.string().uuid().optional(),
   payload: z.unknown().optional(),
   source: z.enum(["webhook", "cron", "email"]),
+  chain: z.array(z.string()).optional(),
 });
 
 export const workflowSaveSchema = z.object({
