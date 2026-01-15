@@ -267,7 +267,11 @@ async function handleHttpRequest(
       ? formatWorkflowChain(context.chain)
       : null;
 
-  const body = config.body ?? input;
+  const rawBody = config.body;
+  const body =
+    typeof rawBody === "string" && rawBody.trim() === ""
+      ? input
+      : (rawBody ?? input);
   const bodyPayload = parseJsonMaybe(body);
   const shouldSendBody = !["GET", "HEAD"].includes(method);
 
