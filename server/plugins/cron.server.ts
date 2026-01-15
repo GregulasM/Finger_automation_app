@@ -10,13 +10,26 @@ type CronGlobals = typeof globalThis & {
 };
 
 export default defineNitroPlugin(() => {
+  const config = useRuntimeConfig();
+  const schedulerMode = String(
+    config.workflowSchedulerMode ?? "",
+  ).toLowerCase();
+  const isProduction =
+    process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+  const allowLocalScheduler =
+    schedulerMode === "local" ||
+    (!isProduction && schedulerMode !== "disabled");
+
   // Skip during build/prerender phase
   if (
-    process.env.NITRO_PRESET === 'nitro-prerender' || 
-    process.env.BUILDING || 
-    process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
+    process.env.NITRO_PRESET === "nitro-prerender" ||
+    process.env.BUILDING ||
+    !allowLocalScheduler ||
+    (isProduction && !process.env.DATABASE_URL)
   ) {
-    console.log("[Cron Plugin] Skipping initialization during build/prerender");
+    console.log(
+      "[Cron Plugin] Skipping initialization (build/prerender or scheduler disabled)",
+    );
     return;
   }
 
@@ -47,7 +60,10 @@ export default defineNitroPlugin(() => {
     try {
       const result = await runCronWorkflows({});
       if (result.queued > 0) {
-        console.log(`[Cron Plugin] Queued ${result.queued} cron workflow(s):`, result.executions);
+        console.log(
+          `[Cron Plugin] Queued ${result.queued} cron workflow(s):`,
+          result.executions,
+        );
       }
     } catch (error) {
       console.error("[Cron Plugin] Cron run failed:", error);
@@ -65,7 +81,9 @@ export default defineNitroPlugin(() => {
     try {
       const result = await runEmailPolling();
       if (result.triggered > 0) {
-        console.log(`[Email Polling] Triggered ${result.triggered} workflow(s)`);
+        console.log(
+          `[Email Polling] Triggered ${result.triggered} workflow(s)`,
+        );
       }
       if (result.errors.length > 0) {
         console.warn(`[Email Polling] Errors:`, result.errors);

@@ -1,9 +1,7 @@
-import { readBody } from "h3";
 import { runCronWorkflows } from "../../utils/cron-runner";
 import { requireSchedulerAuth } from "../../utils/scheduler-auth";
 
 export default defineEventHandler(async (event) => {
   requireSchedulerAuth(event);
-  const payload = await readBody(event).catch(() => ({}));
-  return await runCronWorkflows(payload);
+  return await runCronWorkflows({});
 });

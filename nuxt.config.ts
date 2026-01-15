@@ -26,7 +26,6 @@ export default defineNuxtConfig({
     "nuxt-auth-utils",
   ],
 
-  
   runtimeConfig: {
     authSecret:
       process.env.NUXT_AUTH_SECRET ||
@@ -42,6 +41,10 @@ export default defineNuxtConfig({
     qstashToken: process.env.QSTASH_TOKEN || "",
     qstashCurrentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY || "",
     qstashNextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY || "",
+    workflowQueueMode: process.env.WORKFLOW_QUEUE_MODE || "",
+    workflowSchedulerMode: process.env.WORKFLOW_SCHEDULER_MODE || "",
+    schedulerSecret:
+      process.env.SCHEDULER_SECRET || process.env.CRON_SECRET || "",
     public: {
       appUrl: process.env.APP_URL || "http://localhost:3000",
     },
@@ -57,16 +60,16 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
       routes: [],
-      ignore: ['/'],
+      ignore: ["/"],
       failOnError: false,
     },
     esbuild: {
       options: {
-        target: 'esnext'
-      }
+        target: "esnext",
+      },
     },
     // Disable prerendering completely
-    static: false
+    static: false,
   },
   devtools: {
     enabled: true,
@@ -100,8 +103,8 @@ export default defineNuxtConfig({
       applyLayout(pages);
     },
     close: () => {
-      process.exit(0)
-    }
+      process.exit(0);
+    },
   },
   colorMode: {
     preference: "light",

@@ -529,7 +529,7 @@
       <!-- Node settings sidebar -->
       <aside
         :class="[
-          'flex w-80 flex-shrink-0 flex-col border-l border-orange-500/30 bg-zinc-800 max-w-[30vw] min-w-0',
+          'flex w-100 flex-shrink-0 flex-col border-l border-orange-500/30 bg-zinc-800 max-w-[100vw] min-w-0',
           'fixed lg:static right-0 bottom-0 z-50 lg:z-auto',
           'top-10 4xs:top-10 3xs:top-11 2xs:top-12 xs:top-14 sm:top-12 lg:top-0',
           'transform transition-transform duration-300 ease-in-out',

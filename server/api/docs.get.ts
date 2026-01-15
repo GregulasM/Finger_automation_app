@@ -70,6 +70,23 @@ export default defineEventHandler(() => {
           },
         },
       },
+      "/api/auth/verify": {
+        get: {
+          summary: "Verify email token",
+          parameters: [
+            {
+              name: "token",
+              in: "query",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": { description: "Email verified" },
+            "400": { description: "Invalid or expired token" },
+          },
+        },
+      },
       "/api/auth/password/request": {
         post: {
           summary: "Request password reset",
@@ -129,6 +146,13 @@ export default defineEventHandler(() => {
         },
       },
       "/api/cron/run": {
+        get: {
+          summary: "Trigger cron workflows (GET)",
+          responses: {
+            "200": { description: "Workflows queued" },
+            "401": { description: "Unauthorized" },
+          },
+        },
         post: {
           summary: "Trigger cron workflows",
           requestBody: {
@@ -141,12 +165,21 @@ export default defineEventHandler(() => {
           },
           responses: {
             "200": { description: "Workflows queued" },
+            "401": { description: "Unauthorized" },
           },
         },
       },
       "/api/workflows/execute": {
         post: {
           summary: "Execute workflow (QStash)",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/WorkflowJobPayload" },
+              },
+            },
+          },
           responses: {
             "200": { description: "Execution completed" },
             "401": { description: "Invalid signature" },
@@ -216,6 +249,21 @@ export default defineEventHandler(() => {
             "404": { description: "Workflow not found" },
           },
         },
+        delete: {
+          summary: "Delete workflow",
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": { description: "Workflow deleted" },
+            "404": { description: "Workflow not found" },
+          },
+        },
       },
       "/api/workflows/{id}/executions": {
         get: {
@@ -274,6 +322,56 @@ export default defineEventHandler(() => {
           },
         },
       },
+      "/api/email/poll": {
+        get: {
+          summary: "Poll email triggers (scheduler)",
+          responses: {
+            "200": { description: "Email polling executed" },
+            "401": { description: "Unauthorized" },
+          },
+        },
+        post: {
+          summary: "Poll email triggers (scheduler)",
+          responses: {
+            "200": { description: "Email polling executed" },
+            "401": { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/email/test-imap": {
+        post: {
+          summary: "Test IMAP connection",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ImapTestPayload" },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "IMAP test result" },
+            "400": { description: "Validation error" },
+          },
+        },
+      },
+      "/api/email/test-smtp": {
+        post: {
+          summary: "Test or send SMTP email",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/SmtpTestPayload" },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "SMTP test result" },
+            "400": { description: "Validation error" },
+          },
+        },
+      },
     },
     components: {
       schemas: {
@@ -308,6 +406,44 @@ export default defineEventHandler(() => {
             password: { type: "string", minLength: 8 },
           },
           required: ["token", "password"],
+        },
+        WorkflowJobPayload: {
+          type: "object",
+          properties: {
+            workflowId: { type: "string" },
+            executionId: { type: "string" },
+            source: { type: "string", enum: ["webhook", "cron", "email"] },
+            payload: { type: "object", additionalProperties: true },
+          },
+          required: ["workflowId", "source"],
+        },
+        ImapTestPayload: {
+          type: "object",
+          properties: {
+            email: { type: "string", format: "email" },
+            password: { type: "string" },
+            host: { type: "string" },
+            port: { type: "integer" },
+          },
+          required: ["email", "password"],
+        },
+        SmtpTestPayload: {
+          type: "object",
+          properties: {
+            provider: { type: "string" },
+            action: { type: "string", enum: ["test", "send"] },
+            smtpEmail: { type: "string" },
+            smtpPassword: { type: "string" },
+            smtpHost: { type: "string" },
+            smtpPort: { type: "integer" },
+            sendgridApiKey: { type: "string" },
+            resendApiKey: { type: "string" },
+            from: { type: "string" },
+            to: { type: "string" },
+            subject: { type: "string" },
+            html: { type: "string" },
+            text: { type: "string" },
+          },
         },
         WorkflowPayload: {
           type: "object",

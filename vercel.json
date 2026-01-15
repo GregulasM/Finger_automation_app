@@ -2,5 +2,9 @@
   "buildCommand": "bun run build",
   "installCommand": "bun install",
   "framework": "nuxtjs",
-  "outputDirectory": ".output/public"
+  "outputDirectory": ".output/public",
+  "crons": [
+    { "path": "/api/cron/run", "schedule": "* * * * *" },
+    { "path": "/api/email/poll", "schedule": "*/5 * * * *" }
+  ]
 }

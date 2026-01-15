@@ -41,6 +41,12 @@ UPSTASH_REDIS_REST_TOKEN=скопируй-из-KV_REST_API_TOKEN
 QSTASH_TOKEN=xxx
 QSTASH_CURRENT_SIGNING_KEY=xxx
 QSTASH_NEXT_SIGNING_KEY=xxx
+
+# Очередь и планировщик
+WORKFLOW_QUEUE_MODE=required
+WORKFLOW_SCHEDULER_MODE=serverless
+# Опционально: защита cron/email endpoints (нужны заголовки при вызове)
+SCHEDULER_SECRET=случайный-секрет
 ```
 
 ### 3. Проверь Build Script
@@ -48,19 +54,42 @@ QSTASH_NEXT_SIGNING_KEY=xxx
 В `package.json` должно быть:
 
 ```json
-"build": "bunx prisma migrate deploy && bunx nuxt build && bun scripts/copy-prisma.mjs"
+"build": "bunx nuxt prepare && bunx nuxt build && bun scripts/copy-prisma.mjs"
 ```
 
 **ВАЖНО**: `bun scripts/copy-prisma.mjs` ОБЯЗАТЕЛЬНО должен быть последним!
 
-### 4. Проверь что файлы существуют
+Если хочешь применять миграции на деплое, используй `build:migrate` и поставь
+Build Command на `bun run build:migrate`.
+
+### 4. Планировщик (serverless)
+
+В проде локальные таймеры отключены. Для cron/email нужны внешние вызовы.
+
+Вариант A: Vercel Cron Jobs (без заголовков)
+1) Добавь Cron Job: `GET /api/cron/run` с расписанием `* * * * *`
+2) Добавь Cron Job: `GET /api/email/poll` с расписанием `*/5 * * * *`
+3) Если используешь Vercel Cron и не можешь передать заголовки, оставь
+   `SCHEDULER_SECRET` пустым (авторизация отключится).
+4) Если Cron Jobs добавлены в `vercel.json`, убедись что `SCHEDULER_SECRET`
+   пустой, иначе вызовы будут отклонены.
+
+Вариант B: Upstash QStash Schedule (с заголовками)
+1) Создай два schedule в QStash с теми же расписаниями и `POST` методом
+2) Передавай заголовок `x-scheduler-secret: <SCHEDULER_SECRET>`
+
+### 5. Swagger UI
+
+Документация доступна на `/docs`, OpenAPI JSON на `/api/docs`.
+
+### 6. Проверь что файлы существуют
 
 - ✅ `scripts/copy-prisma.mjs` - копирует Prisma модули
 - ✅ `vercel.json` - конфиг Vercel
 - ✅ `app/lib/prisma.ts` - Prisma клиент с адаптером
 - ✅ `nuxt.config.ts` - с prismaTraceInclude
 
-### 5. Deploy
+### 7. Deploy
 
 ```bash
 git add .

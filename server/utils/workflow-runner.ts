@@ -32,6 +32,10 @@ export async function processWorkflowJob(data: WorkflowJobData) {
       ? await prisma.execution.findUnique({ where: { id: data.executionId } })
       : null;
 
+    if (execution && execution.status !== "PENDING") {
+      return;
+    }
+
     const executionRecord =
       execution ??
       (await prisma.execution.create({
@@ -292,11 +296,11 @@ async function handleEmail(step: WorkflowStep, input: unknown) {
 
   // Check if custom provider is configured
   const provider = String(config.emailProvider ?? "resend");
-  
+
   if (provider !== "resend" || config.smtpEmail || config.sendgridApiKey) {
     // Use new multi-provider system
     const { sendEmailWithProvider } = await import("./email-providers");
-    
+
     const result = await sendEmailWithProvider(
       {
         provider: provider as "gmail" | "sendgrid" | "smtp" | "resend",
@@ -308,7 +312,7 @@ async function handleEmail(step: WorkflowStep, input: unknown) {
         resendApiKey: config.resendApiKey as string | undefined,
         from: config.from as string | undefined,
       },
-      { to, subject, html, text }
+      { to, subject, html, text },
     );
 
     if (!result.ok) {
@@ -316,7 +320,10 @@ async function handleEmail(step: WorkflowStep, input: unknown) {
       throw new Error(result.error || "Email sending failed");
     }
 
-    console.log("[Email Action] Success:", { provider: result.provider, messageId: result.messageId });
+    console.log("[Email Action] Success:", {
+      provider: result.provider,
+      messageId: result.messageId,
+    });
     return { ok: true, provider: result.provider, messageId: result.messageId };
   }
 
