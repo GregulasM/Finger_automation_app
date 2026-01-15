@@ -496,10 +496,23 @@ async function handleDatabase(step: WorkflowStep, input: unknown) {
 
   const rawArgs = parseObjectConfig(config.args);
   const args = { ...rawArgs } as Record<string, unknown>;
+  const inputObject =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : null;
+
+  if (
+    Object.keys(args).length === 0 &&
+    inputObject &&
+    looksLikePrismaArgs(inputObject)
+  ) {
+    return (delegate[operation] as (value: Record<string, unknown>) => unknown)(
+      inputObject,
+    );
+  }
 
   if (!("data" in args) && operation === "create") {
-    args.data =
-      typeof input === "object" && input !== null ? input : { value: input };
+    args.data = inputObject ?? { value: input };
   }
 
   return (delegate[operation] as (value: Record<string, unknown>) => unknown)(
@@ -650,6 +663,24 @@ function delay(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+function looksLikePrismaArgs(input: Record<string, unknown>) {
+  const keys = new Set(Object.keys(input));
+  const prismaKeys = [
+    "data",
+    "where",
+    "select",
+    "include",
+    "orderBy",
+    "take",
+    "skip",
+    "cursor",
+    "distinct",
+    "create",
+    "update",
+  ];
+  return prismaKeys.some((key) => keys.has(key));
 }
 
 function resolveAppOrigin(configUrl?: string) {
