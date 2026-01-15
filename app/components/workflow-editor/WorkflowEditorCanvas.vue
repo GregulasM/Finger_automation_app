@@ -57,7 +57,12 @@ const {
               :position="targetPosition || Position.Left"
               class="handle-input"
             />
-            <div class="node-label">{{ data.label }}</div>
+            <div class="node-label flex items-center justify-center gap-1">
+              <span class="text-[10px] text-zinc-900/70">
+                {{ data.role ? `(${data.role[0].toUpperCase()})` : "" }}
+              </span>
+              <span>{{ data.label }}</span>
+            </div>
             <Handle
               type="source"
               :position="sourcePosition || Position.Right"

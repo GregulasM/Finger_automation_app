@@ -11,11 +11,27 @@ const {
   getTranslatedRole,
   selectPalette,
   addNodeFromPalette,
+  toast,
+  isMobileViewport,
   translatedSelectedPalette,
   selectedPalette,
   onDragStart,
   onDragEnd,
 } = useWorkflowEditorContext();
+
+function handleAddNode(item: (typeof palette)[number] | undefined) {
+  if (!item) {
+    return;
+  }
+  addNodeFromPalette(item);
+  if (isMobileViewport()) {
+    toast.add({
+      title: t("editor.addedToCanvas"),
+      icon: "i-heroicons-check-circle",
+      timeout: 2000,
+    });
+  }
+}
 </script>
 
 <template>
@@ -32,7 +48,7 @@ const {
       <button
         type="button"
         @click="blocksMenuOpen = false"
-        class="lg:hidden absolute top-2 right-2 rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 py-1 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800 transition"
+        class="lg:hidden absolute top-2 right-2 rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800 transition"
         aria-label="Close blocks menu"
       >
         <svg
@@ -72,12 +88,12 @@ const {
           "
           @dragend="onDragEnd"
           @click="selectPalette(palette.find((p) => p.id === item.id)!)"
-          @dblclick="addNodeFromPalette(palette.find((p) => p.id === item.id)!)"
+          @dblclick="handleAddNode(palette.find((p) => p.id === item.id)!)"
           @keydown.enter.prevent="
-            addNodeFromPalette(palette.find((p) => p.id === item.id)!)
+            handleAddNode(palette.find((p) => p.id === item.id)!)
           "
           @keydown.space.prevent="
-            addNodeFromPalette(palette.find((p) => p.id === item.id)!)
+            handleAddNode(palette.find((p) => p.id === item.id)!)
           "
         >
           <div class="flex items-center justify-between gap-2 min-w-0">
@@ -154,7 +170,7 @@ const {
               <button
                 type="button"
                 class="rounded-md border border-orange-500/30 bg-zinc-800/90 px-2 4xs:px-2.5 py-1 4xs:py-1.5 text-zinc-100 transition hover:border-orange-500/70 hover:bg-zinc-800"
-                @click="addNodeFromPalette(selectedPalette!)"
+                @click="handleAddNode(selectedPalette!)"
               >
                 <span
                   class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold"

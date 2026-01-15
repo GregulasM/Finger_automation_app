@@ -20,14 +20,16 @@ const {
     :class="[
       'flex w-100 flex-shrink-0 flex-col border-l border-orange-500/30 bg-zinc-800 max-w-[100vw] min-w-0',
       'fixed lg:static right-0 bottom-0 z-50 lg:z-auto',
-      'top-10 4xs:top-10 3xs:top-11 2xs:top-12 xs:top-14 sm:top-16 md:top-20 lg:top-0',
+      'top-10 4xs:top-10 3xs:top-11 2xs:top-12 xs:top-14 sm:top-16 md:top-20 lg:top-0 rounded-t-md',
       'transform transition-transform duration-300 ease-in-out ',
-      nodeSettingsMenuOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
+      nodeSettingsMenuOpen
+        ? 'translate-x-0'
+        : 'translate-x-full lg:translate-x-0',
     ]"
   >
     <div class="relative flex h-full flex-col scale-[0.95] origin-top-right">
       <div
-        class="flex-shrink-0 border-b border-orange-500/30 px-1 4xs:px-1 py-1 4xs:py-1"
+        class="flex-shrink-0 border-b border-orange-500/30 px-1 4xs:pl-6 4xs:pr-2 py-1 4xs:py-1"
       >
         <div class="flex items-start justify-between gap-1 min-w-0">
           <div class="min-w-0 flex-1">

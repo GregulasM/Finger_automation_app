@@ -120,7 +120,7 @@ const {
 
     <div
       v-if="!mobileHintDismissed"
-      class="lg:hidden fixed left-2 right-2 top-28 z-50 flex items-center gap-2 rounded-lg border border-orange-500/30 bg-zinc-900/95 px-3 py-2 text-zinc-100 text-[10px] xs:text-[11px] sm:text-xs shadow-lg"
+      class="lg:hidden fixed left-0 right-0 bottom-4 mx-10 z-50 flex items-center gap-2 rounded-lg border border-orange-500/30 bg-zinc-900/95 px-3 pt-2 pb-4 text-zinc-100 text-[10px] xs:text-[11px] sm:text-xs shadow-lg"
     >
       <span class="flex-1">{{ t("editor.mobileHint") }}</span>
       <button

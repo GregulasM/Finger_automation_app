@@ -97,16 +97,16 @@ watch(mobileOpen, (open) => {
         <!-- Brand -->
         <NuxtLink
           to="/"
-          class="flex min-w-0 items-center gap-1 4xs:gap-2 rounded-md border border-orange-500/30 bg-zinc-800/70 px-1 4xs:px-2 py-1"
+          class="flex min-w-0 items-center gap-1 4xs:gap-1.5 rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 py-1"
         >
-          <div class="min-w-0 leading-tight">
+          <div class="min-w-0 leading-none">
             <div
-              class="truncate text-[7px] 4xs:text-[8px] 3xs:text-[9px] 2xs:text-[10px] xs:text-[11px] sm:text-sm md:text-md lg:text-md 2xl:text-lg 3xl:text-lg/6 4xl:text-2xl/8 5xl:text-3xl/10 font-bold text-zinc-100"
+              class="truncate text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-bold text-zinc-100"
             >
               Finger Automation
             </div>
             <div
-              class="truncate text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
+              class="hidden xs:block truncate text-[4px] 4xs:text-[5px] 3xs:text-[6px] 2xs:text-[7px] xs:text-[8px] sm:text-[10px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 text-zinc-100/70"
             >
               Workflow studio
             </div>
@@ -141,7 +141,7 @@ watch(mobileOpen, (open) => {
             <button
               type="button"
               @click="toggleLocale"
-              class="inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-3 py-1 3xs:py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
+              class="inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-2.5 py-1 3xs:py-1.5 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
               :title="locale === 'en' ? t('lang.russian') : t('lang.english')"
             >
               <span
@@ -155,13 +155,13 @@ watch(mobileOpen, (open) => {
           <!-- Mobile hamburger -->
           <button
             type="button"
-            class="md:hidden inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-3 py-1 3xs:py-2 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
+            class="md:hidden inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-2.5 py-1 3xs:py-1.5 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
             :aria-expanded="mobileOpen ? 'true' : 'false'"
             aria-label="Open menu"
             @click="mobileOpen = !mobileOpen"
           >
             <svg
-              class="h-3 w-3 2xs:h-4 2xs:w-4"
+              class="h-2.5 w-2.5"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -178,7 +178,7 @@ watch(mobileOpen, (open) => {
           <!-- Primary action -->
           <NuxtLink
             to="/workflows/editor"
-            class="inline-flex items-center justify-center rounded-md border border-orange-500 bg-orange-500 px-2 2xs:px-3 xs:px-4 py-1 3xs:py-2 text-zinc-950 transition hover:brightness-110"
+            class="inline-flex items-center justify-center rounded-md border border-orange-500 bg-orange-500 px-2 2xs:px-2.5 xs:px-3 py-1 3xs:py-1.5 text-zinc-950 transition hover:brightness-110"
           >
             <span
               class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold leading-none"
@@ -208,7 +208,7 @@ watch(mobileOpen, (open) => {
 
             <button
               type="button"
-              class="inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-3 py-1 3xs:py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
+              class="inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-2.5 py-1 3xs:py-1.5 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
               @click="handleLogout"
             >
               <span
@@ -222,7 +222,7 @@ watch(mobileOpen, (open) => {
           <NuxtLink
             v-else
             to="/auth/login"
-            class="hidden 2xs:inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-3 py-1 3xs:py-2 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
+            class="hidden 2xs:inline-flex items-center justify-center rounded-md border border-orange-500/30 bg-zinc-800/70 px-2 2xs:px-2.5 py-1 3xs:py-1.5 text-zinc-100 hover:border-orange-500/70 hover:bg-zinc-800/90 transition"
           >
             <span
               class="text-[5px] 4xs:text-[6px] 3xs:text-[7px] 2xs:text-[9px] xs:text-[10px] sm:text-[11px] md:text-xs lg:text-sm 2xl:text-base 3xl:text-lg/8 4xl:text-2xl/10 5xl:text-3xl/12 font-semibold leading-none"

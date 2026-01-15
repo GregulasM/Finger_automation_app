@@ -114,8 +114,8 @@ const { t } = useI18n();
 
 // Unified input styles matching workflow editor
 const inputStyles = {
-  root: "ring-0",
-  base: "ring-0 !ring-inset-0 bg-zinc-800 border border-orange-500/50 text-zinc-100 placeholder:text-zinc-500 focus:bg-zinc-800 focus:border-orange-500 focus:text-zinc-100 focus:!ring-2 focus:!ring-orange-500 focus:!ring-inset focus:ring-offset-0 focus-visible:!ring-2 focus-visible:!ring-orange-500 focus-visible:!ring-inset focus-visible:ring-offset-0",
+  root: "ring-0 w-full",
+  base: "w-full ring-0 !ring-inset-0 bg-zinc-800 border border-orange-500/50 text-zinc-100 placeholder:text-zinc-500 focus:bg-zinc-800 focus:border-orange-500 focus:text-zinc-100 focus:!ring-2 focus:!ring-orange-500 focus:!ring-inset focus:ring-offset-0 focus-visible:!ring-2 focus-visible:!ring-orange-500 focus-visible:!ring-inset focus-visible:ring-offset-0",
 };
 
 const formFieldStyles = {

@@ -102,6 +102,7 @@ export const useI18n = () => {
       "editor.blocks": "Blocks",
       "editor.blockDetails": "Block details",
       "editor.addToCanvas": "Add to canvas",
+      "editor.addedToCanvas": "Added to canvas.",
       "editor.tipDrag": "Tip: drag to place it precisely.",
       "editor.multiSelectHint":
         "Tip: Hold Shift and click to select multiple blocks at once",
@@ -534,6 +535,7 @@ export const useI18n = () => {
       "editor.blocks": "Блоки",
       "editor.blockDetails": "Детали блока",
       "editor.addToCanvas": "Добавить на холст",
+      "editor.addedToCanvas": "Добавлено на холст.",
       "editor.tipDrag": "Подсказка: перетащите для точного размещения.",
       "editor.multiSelectHint":
         "Подсказка: Удерживайте Shift и кликайте для выделения нескольких блоков",
